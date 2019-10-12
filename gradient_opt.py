@@ -78,12 +78,46 @@ def gradient_optmization(x,y,args,method,batch_size = 80):
             print("nestrov does not converge")
         return theta, convergence
 
+    if method =='adagrad':
+        alpha = args[0]
+        G = theta**2
+        eps = 1e-8
+        while itr_cnt < max_itr and not convergence:
+            grad = batch_grad(x,y,theta,batch_size)
+            new_theta = theta - alpha/np.sqrt(G+eps)*grad
+            G += grad**2
+            if distance.euclidean(theta, new_theta) < 1e-4:
+                convergence = True
+                print("adagrad converges")
+            theta = new_theta
+            itr_cnt += 1
+        if itr_cnt >= max_itr:
+            print("adagrad does not converge")
+        return theta, convergence
+
+    if method == 'rmsprop':
+        alpha = args[0]
+        mu=args[1]
+        eps = 1e-8
+        expect = theta**2
+        while itr_cnt < max_itr and not convergence:
+            grad = batch_grad(x,y,theta,batch_size)
+            expect = mu*expect + (1-mu)*grad**2
+            new_theta = theta - alpha/np.sqrt(expect+eps)*grad
+            if distance.euclidean(theta, new_theta) < 1e-4:
+                convergence = True
+                print("rmsprop converges")
+            theta = new_theta
+            itr_cnt += 1
+        if itr_cnt >= max_itr:
+            print("rmsprop does not converge")
+        return theta, convergence
 
 if __name__ =='__main__':
     data = sio.loadmat('a1data.mat')
     x = data['x'].T[0]
     y = data['y'].T[0]
-    theta,con = gradient_optmization(x,y,[0.001,0.9],'nestrov')
+    theta,con = gradient_optmization(x,y,[0.001,0.9],'rmsprop')
     print(theta)
 
 
