@@ -23,10 +23,10 @@ def batch_grad(x,y,theta,batch_size):
 def gradient_optmization(x,y,args,method,batch_size = 80):
     theta = np.array([1.0,1.0],dtype='float64')
     max_itr = 100000
+    itr_cnt = 0
+    convergence = False
     if method == 'sgd':
         alpha = args[0]
-        itr_cnt = 0
-        convergence = False
         while itr_cnt < max_itr and not convergence:
             grad = batch_grad(x,y,theta,batch_size)
             new_theta = theta - alpha*grad
@@ -39,11 +39,51 @@ def gradient_optmization(x,y,args,method,batch_size = 80):
             print("sgd does not converge")
         return theta,convergence
 
+    if method =='momentum':
+        alpha = args[0]
+        mu = args[1]
+        v0 = theta
+        v1 = np.array([0, 0], dtype='float64')
+        while itr_cnt < max_itr and not convergence:
+            grad = batch_grad(x,y,theta,batch_size)
+            v1 = mu*v0 + alpha*grad
+            v0=v1
+            new_theta = theta - v1
+            if distance.euclidean(theta, new_theta) < 1e-4:
+                convergence = True
+                print("momentum converges")
+            theta = new_theta
+            itr_cnt += 1
+        if itr_cnt >= max_itr:
+            print("momentum does not converge")
+        return theta, convergence
+
+    if method == 'nestrov':
+        alpha = args[0]
+        mu = args[1]
+        v0 = theta
+        v1 = np.array([0, 0], dtype='float64')
+        while itr_cnt < max_itr and not convergence:
+            theta_ahead = theta - mu*v0
+            grad = batch_grad(x, y, theta_ahead, batch_size)
+            v1 = mu * v0 + alpha * grad
+            v0 = v1
+            new_theta = theta - v1
+            if distance.euclidean(theta, new_theta) < 1e-4:
+                convergence = True
+                print("nestrov converges")
+            theta = new_theta
+            itr_cnt += 1
+        if itr_cnt >= max_itr:
+            print("nestrov does not converge")
+        return theta, convergence
+
+
 if __name__ =='__main__':
     data = sio.loadmat('a1data.mat')
     x = data['x'].T[0]
     y = data['y'].T[0]
-    theta,con = gradient_optmization(x,y,[0.001],'sgd')
+    theta,con = gradient_optmization(x,y,[0.001,0.9],'nestrov')
     print(theta)
 
 
