@@ -146,7 +146,7 @@ if __name__ =='__main__':
     data = sio.loadmat('a1data.mat')
     x = data['x'].T[0]
     y = data['y'].T[0]
-    theta,con = gradient_optmization(x,y,[0.001,0.9,0.9],'sgd')
+    theta,con = gradient_optmization(x,y,[0.001,0.9,0.9],'adam')
     print(theta)
 
 
