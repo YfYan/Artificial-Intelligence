@@ -25,12 +25,13 @@ def gradient_optmization(x,y,args,method,batch_size = 80):
     max_itr = 100000
     itr_cnt = 0
     convergence = False
+    threshold = 1e-5
     if method == 'sgd':
         alpha = args[0]
         while itr_cnt < max_itr and not convergence:
             grad = batch_grad(x,y,theta,batch_size)
             new_theta = theta - alpha*grad
-            if distance.euclidean(theta,new_theta) < 1e-4:
+            if distance.euclidean(theta,new_theta) < threshold:
                 convergence = True
                 print("sgd converges")
             theta = new_theta
@@ -49,7 +50,7 @@ def gradient_optmization(x,y,args,method,batch_size = 80):
             v1 = mu*v0 + alpha*grad
             v0=v1
             new_theta = theta - v1
-            if distance.euclidean(theta, new_theta) < 1e-4:
+            if distance.euclidean(theta, new_theta) < threshold:
                 convergence = True
                 print("momentum converges")
             theta = new_theta
@@ -69,7 +70,7 @@ def gradient_optmization(x,y,args,method,batch_size = 80):
             v1 = mu * v0 + alpha * grad
             v0 = v1
             new_theta = theta - v1
-            if distance.euclidean(theta, new_theta) < 1e-4:
+            if distance.euclidean(theta, new_theta) < threshold:
                 convergence = True
                 print("nestrov converges")
             theta = new_theta
@@ -86,7 +87,7 @@ def gradient_optmization(x,y,args,method,batch_size = 80):
             grad = batch_grad(x,y,theta,batch_size)
             new_theta = theta - alpha/np.sqrt(G+eps)*grad
             G += grad**2
-            if distance.euclidean(theta, new_theta) < 1e-4:
+            if distance.euclidean(theta, new_theta) < threshold:
                 convergence = True
                 print("adagrad converges")
             theta = new_theta
@@ -104,7 +105,7 @@ def gradient_optmization(x,y,args,method,batch_size = 80):
             grad = batch_grad(x,y,theta,batch_size)
             expect = mu*expect + (1-mu)*grad**2
             new_theta = theta - alpha/np.sqrt(expect+eps)*grad
-            if distance.euclidean(theta, new_theta) < 1e-4:
+            if distance.euclidean(theta, new_theta) < threshold:
                 convergence = True
                 print("rmsprop converges")
             theta = new_theta
@@ -113,11 +114,39 @@ def gradient_optmization(x,y,args,method,batch_size = 80):
             print("rmsprop does not converge")
         return theta, convergence
 
+    if method == 'adam':
+        eps = 1e-8
+        alpha = args[0]
+        mu1 = args[1]
+        mu2 = args[2]
+        p1 = mu1
+        p2 = mu2
+        v = np.array([0,0],dtype = 'float64')
+        u = np.array([0,0],dtype = 'float64')
+        while itr_cnt < max_itr and not convergence:
+            grad = batch_grad(x, y, theta, batch_size)
+            v = mu1 * v + (1-mu1)*grad
+            u = mu2*u +(1-mu2)*grad**2
+            v_hat = v/(1-p1)
+            u_hat = u/(1-p2)
+            p1*=mu1
+            p2*=mu2
+            new_theta = theta - alpha/(np.sqrt(u_hat+eps))*v_hat
+            if distance.euclidean(theta, new_theta) < threshold:
+                convergence = True
+                print("adam converges")
+            theta = new_theta
+            itr_cnt += 1
+        if itr_cnt >= max_itr:
+            print("adam does not converge")
+        return theta, convergence
+
+
 if __name__ =='__main__':
     data = sio.loadmat('a1data.mat')
     x = data['x'].T[0]
     y = data['y'].T[0]
-    theta,con = gradient_optmization(x,y,[0.001,0.9],'rmsprop')
+    theta,con = gradient_optmization(x,y,[0.001,0.9,0.9],'sgd')
     print(theta)
 
 
