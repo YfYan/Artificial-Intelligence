@@ -114,6 +114,27 @@ def gradient_optmization(x,y,args,method,batch_size = 80):
             print("rmsprop does not converge")
         return theta, convergence
 
+    if method == 'adadelta':
+        alpha = args[0]
+        mu = args[1]
+        eps = 1e-8
+        expect = theta ** 2
+        delta_expect = np.array([0,0],dtype = 'float64')
+        while itr_cnt < max_itr and not convergence:
+            grad = batch_grad(x,y,theta,batch_size)
+            expect = mu * expect + (1 - mu) * grad ** 2
+            delta = -np.sqrt(delta_expect+eps)/np.sqrt(expect+eps)*grad
+            new_theta = theta + delta
+            delta_expect = mu*delta_expect + (1-mu)*delta**2
+            if distance.euclidean(theta, new_theta) < threshold:
+                convergence = True
+                print("adadelta converges")
+            theta = new_theta
+            itr_cnt += 1
+        if itr_cnt >= max_itr:
+            print("adadelta does not converge")
+        return theta, convergence
+
     if method == 'adam':
         eps = 1e-8
         alpha = args[0]
