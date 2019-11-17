@@ -20,12 +20,21 @@ def batch_grad(x,y,theta,batch_size):
         grad += single_grad(x[index],y[index],theta)
     return grad / batch_size
 
+def cal_all_loss(x,y,theta):
+    total = x.shape[0]
+    all_loss = 0
+    for i in range(total):
+        all_loss+= loss(x[i],y[i],theta)**2
+    return all_loss/total
+
 def gradient_optmization(x,y,args,method,batch_size = 80):
     theta = np.array([1.0,1.0],dtype='float64')
     max_itr = 100000
     itr_cnt = 0
+    total_loss = []
     convergence = False
     threshold = 1e-5
+    all_theta = [theta]
     if method == 'sgd':
         alpha = args[0]
         while itr_cnt < max_itr and not convergence:
@@ -36,9 +45,11 @@ def gradient_optmization(x,y,args,method,batch_size = 80):
                 print("sgd converges")
             theta = new_theta
             itr_cnt+=1
+            if itr_cnt%100==0:
+                total_loss.append(cal_all_loss(x,y,theta))
+            all_theta.append(theta)
         if itr_cnt >= max_itr:
             print("sgd does not converge")
-        return theta,convergence
 
     if method =='momentum':
         alpha = args[0]
@@ -55,9 +66,11 @@ def gradient_optmization(x,y,args,method,batch_size = 80):
                 print("momentum converges")
             theta = new_theta
             itr_cnt += 1
+            if itr_cnt%100==0:
+                total_loss.append(cal_all_loss(x,y,theta))
+            all_theta.append(theta)
         if itr_cnt >= max_itr:
             print("momentum does not converge")
-        return theta, convergence
 
     if method == 'nestrov':
         alpha = args[0]
@@ -75,9 +88,11 @@ def gradient_optmization(x,y,args,method,batch_size = 80):
                 print("nestrov converges")
             theta = new_theta
             itr_cnt += 1
+            if itr_cnt%100==0:
+                total_loss.append(cal_all_loss(x,y,theta))
+            all_theta.append(theta)
         if itr_cnt >= max_itr:
             print("nestrov does not converge")
-        return theta, convergence
 
     if method =='adagrad':
         alpha = args[0]
@@ -92,9 +107,11 @@ def gradient_optmization(x,y,args,method,batch_size = 80):
                 print("adagrad converges")
             theta = new_theta
             itr_cnt += 1
+            if itr_cnt%100==0:
+                total_loss.append(cal_all_loss(x,y,theta))
+            all_theta.append(theta)
         if itr_cnt >= max_itr:
             print("adagrad does not converge")
-        return theta, convergence
 
     if method == 'rmsprop':
         alpha = args[0]
@@ -110,9 +127,11 @@ def gradient_optmization(x,y,args,method,batch_size = 80):
                 print("rmsprop converges")
             theta = new_theta
             itr_cnt += 1
+            if itr_cnt%100==0:
+                total_loss.append(cal_all_loss(x,y,theta))
+            all_theta.append(theta)
         if itr_cnt >= max_itr:
             print("rmsprop does not converge")
-        return theta, convergence
 
     if method == 'adadelta':
         alpha = args[0]
@@ -131,9 +150,11 @@ def gradient_optmization(x,y,args,method,batch_size = 80):
                 print("adadelta converges")
             theta = new_theta
             itr_cnt += 1
+            if itr_cnt%100==0:
+                total_loss.append(cal_all_loss(x,y,theta))
+            all_theta.append(theta)
         if itr_cnt >= max_itr:
             print("adadelta does not converge")
-        return theta, convergence
 
     if method == 'adam':
         eps = 1e-8
@@ -158,17 +179,21 @@ def gradient_optmization(x,y,args,method,batch_size = 80):
                 print("adam converges")
             theta = new_theta
             itr_cnt += 1
+            if itr_cnt%100==0:
+                total_loss.append(cal_all_loss(x,y,theta))
+            all_theta.append(theta)
         if itr_cnt >= max_itr:
             print("adam does not converge")
-        return theta, convergence
+    return theta, convergence, itr_cnt,all_theta,total_loss
 
 
 if __name__ =='__main__':
     data = sio.loadmat('a1data.mat')
     x = data['x'].T[0]
     y = data['y'].T[0]
-    theta,con = gradient_optmization(x,y,[0.001,0.9,0.9],'adam')
-    print(theta)
+    print(x.shape)
+    #theta,con = gradient_optmization(x,y,[0.001,0.9,0.9],'adam')
+    #print(theta)
 
 
 
